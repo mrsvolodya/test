@@ -1,23 +1,38 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import "./App.css";
+import { Reorder } from "framer-motion";
 
 function App() {
+  const [list, setList] = useState([]);
+  useEffect(() => {
+    fetch("https://pokeapi.co/api/v2/pokemon?offset=20&limit=20")
+      .then((pokemon) => pokemon.json())
+      .then((pokemon) => {
+        const promises = pokemon.results.map((f) =>
+          fetch(f.url).then((response) => response.json())
+        );
+
+        Promise.all(promises).then((data) => setList(data));
+      });
+  }, []);
+
+  console.log(list);
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Reorder.Group axis="y" onReorder={setList} values={list}>
+        {list.length < 1
+          ? null
+          : list.map((p) => (
+              <Reorder.Item
+                key={p.id}
+                id={p.id}
+                value={p}
+                style={{ backgroundColor: "red", marginBottom: "5px" }}
+              >
+                {p.name}
+              </Reorder.Item>
+            ))}
+      </Reorder.Group>
     </div>
   );
 }
