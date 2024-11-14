@@ -1,38 +1,24 @@
-import { useEffect, useState } from "react";
-import "./App.css";
-import { Reorder } from "framer-motion";
+import { useContext, useState } from "react";
+import { PokemonsList } from "./pokemons/PokemonsList";
+import { StorePokemons } from "./store/StoreProvider";
 
 function App() {
-  const [list, setList] = useState([]);
-  useEffect(() => {
-    fetch("https://pokeapi.co/api/v2/pokemon?offset=20&limit=20")
-      .then((pokemon) => pokemon.json())
-      .then((pokemon) => {
-        const promises = pokemon.results.map((f) =>
-          fetch(f.url).then((response) => response.json())
-        );
+  const [open, setOpen] = useState(false);
+  const { list, favorites } = useContext(StorePokemons);
 
-        Promise.all(promises).then((data) => setList(data));
-      });
-  }, []);
-
-  console.log(list);
   return (
-    <div className="App">
-      <Reorder.Group axis="y" onReorder={setList} values={list}>
-        {list.length < 1
-          ? null
-          : list.map((p) => (
-              <Reorder.Item
-                key={p.id}
-                id={p.id}
-                value={p}
-                style={{ backgroundColor: "red", marginBottom: "5px" }}
-              >
-                {p.name}
-              </Reorder.Item>
-            ))}
-      </Reorder.Group>
+    <div>
+      <button
+        className="w-full bg-blue-500 text-white py-2 rounded"
+        onClick={() => setOpen(!open)}
+      >
+        {!open
+          ? favorites.length > 0
+            ? `All favorites ${favorites.length}`
+            : "All favorites"
+          : "Back to all"}
+      </button>
+      {!open ? <PokemonsList list={list} /> : <PokemonsList list={favorites} />}
     </div>
   );
 }
